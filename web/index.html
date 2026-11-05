@@ -8,10 +8,33 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <main id="game"><canvas id="scene" aria-label="First-person arena"></canvas><div class="vignette"></div>
-    <section id="menu" class="menu"><p class="eyebrow">● FRONTIER SYSTEMS // FIELD SIMULATOR</p><h1>FIELD<br><span>OPERATIONS</span></h1><p>A new theater. A live opposition. Your call.</p><button id="deploy">DEPLOY　→</button><small>WASD MOVE · MOUSE AIM · CLICK FIRE · 1–9 / Q,E WEAPONS<br>R RELOAD · G THROW GRENADE · SHIFT SPRINT · SPACE JUMP · ESC PAUSE</small></section>
-    <section id="pause" class="overlay hidden"><p class="eyebrow">FIELD OPERATIONS // PAUSED</p><h2>TAKE A BREATH.</h2><button id="resume">RESUME MISSION</button><button id="newMap" class="secondary">NEW PROCEDURAL MAP</button></section>
-    <section id="hud"><div class="top">FRONTIER <span id="status">STANDBY</span></div><canvas id="map" width="180" height="180"></canvas><div id="crosshair">＋</div><div class="bottom"><div>VITALS <b id="health">100</b><div class="meter"><i id="meter"></i></div></div><div class="weapon"><small id="class">ASSAULT // 01</small><strong id="weapon">RANGER</strong><span id="ammo">30 / 120</span></div></div><div id="contacts"></div><div id="toast"></div><div id="damage"></div></section>
-  </main><script type="module" src="game.js"></script>
+  <main id="game">
+    <canvas id="scene" aria-label="First-person tactical arena"></canvas>
+    <div class="vignette"></div>
+    <section id="menu" class="screen">
+      <p class="eyebrow">● FRONTIER SYSTEMS // FIELD SIMULATOR</p>
+      <h1>FIELD<br><span>OPERATIONS</span></h1>
+      <p class="subtitle">Hostile territory. Limited resources. Stay sharp, operative.</p>
+      <button id="deploy">DEPLOY</button>
+      <div class="controls">WASD MOVE · MOUSE AIM · CLICK FIRE · SHIFT SPRINT<br>R RELOAD · 1–5 WEAPONS · RIGHT CLICK SCOPE<br>F FLASHBANG · G GRENADE · L LASER · ESC PAUSE</div>
+    </section>
+    <section id="pause" class="screen hidden">
+      <p class="eyebrow">FIELD OPERATIONS // PAUSED</p>
+      <h2>MISSION PAUSED</h2>
+      <button id="resume">RESUME</button>
+      <button id="newMap" class="secondary">NEW ARENA</button>
+    </section>
+    <section id="hud" class="hidden" aria-live="polite">
+      <header><span>FRONTIER // OUTPOST 19</span><strong id="status">STANDBY</strong><span id="objective">HOSTILES: 0</span></header>
+      <div class="health"><span>VITALS</span><div class="meter"><i id="meter"></i></div><b id="health">100</b></div>
+      <div id="crosshair"><i></i><i></i><b></b></div>
+      <div id="scope" class="hidden"><div class="scope-cross"></div></div>
+      <div id="flashOverlay"></div>
+      <div id="toast"></div>
+      <div id="weaponInfo"><small id="class">ASSAULT // 01</small><strong id="weapon">RANGER</strong><span id="ammo">30 / 120</span><span class="tactical">F FLASH <b id="flashCooldown">READY</b> · G FRAG <b id="grenadeCooldown">READY</b> · L LASER <b id="laserState">OFF</b></span></div>
+      <div id="hotbar"></div>
+    </section>
+  </main>
+  <script type="module" src="game.js"></script>
 </body>
 </html>
