@@ -18,17 +18,9 @@ const camera = new THREE.PerspectiveCamera(76, window.innerWidth / window.innerH
 camera.rotation.order = 'YXZ';
 scene.add(new THREE.HemisphereLight(0xdce9dc, 0x303a30, 1.7));
 const sun = new THREE.DirectionalLight(0xffe6c6, 2.4);
-sun.position.set(-32, 48, 25);
-sun.castShadow = true;
-sun.shadow.mapSize.set(1536, 1536);
-sun.shadow.camera.left = -100;
-sun.shadow.camera.right = 100;
-sun.shadow.camera.top = 100;
-sun.shadow.camera.bottom = -100;
-scene.add(sun);
+sun.position.set(-32, 48, 25); sun.castShadow = true; sun.shadow.mapSize.set(1536, 1536); sun.shadow.camera.left = -100; sun.shadow.camera.right = 100; sun.shadow.camera.top = 100; sun.shadow.camera.bottom = -100; scene.add(sun);
 
-const arena = new THREE.Group();
-scene.add(arena);
+const arena = new THREE.Group(); scene.add(arena);
 const colliders = [];
 const bots = [];
 const botMeshes = [];
@@ -36,7 +28,17 @@ const projectiles = [];
 const keys = new Set();
 const raycaster = new THREE.Raycaster();
 const clock = new THREE.Clock();
-const player = { pos: new THREE.Vector3(0, 1.65, 0), health: 100, maxHealth: 100, yaw: 0, pitch: 0, speed: 8 };
+const player = {
+  pos: new THREE.Vector3(0, 1.65, 0),
+  health: 100,
+  maxHealth: 100,
+  yaw: 0,
+  pitch: 0,
+  speed: 8,
+  defaultHeight: 1.65,
+  crouchHeight: 1.05,
+  crouched: false
+};
 const world = { half: 90 };
 let seed = (Date.now() ^ (Math.random() * 0xffffffff)) >>> 0;
 const rand = () => { seed = (seed * 1664525 + 1013904223) >>> 0; return seed / 4294967296; };
@@ -65,6 +67,10 @@ const dom = {
   hotbar: $('#hotbar'), toast: $('#toast'), scope: $('#scope'), flash: $('#flashOverlay'),
   flashCooldown: $('#flashCooldown'), grenadeCooldown: $('#grenadeCooldown'), laserState: $('#laserState')
 };
+
+function applyPlayerHeight() {
+  player.pos.y = player.crouched ? player.crouchHeight : player.defaultHeight;
+}
 
 function texturedMaterial(base, fleck, repeat = 5, roughness = 0.88) {
   const textureCanvas = document.createElement('canvas');
@@ -170,10 +176,11 @@ function buildMap() {
     block(x, height / 2, z, width, height, depth, rand() > 0.5 ? brickMat : concreteMat);
   }
 
-  player.pos.set(0, 1.65, 0);
+  player.pos.set(0, player.defaultHeight, 0);
   player.health = player.maxHealth;
   player.yaw = 0;
   player.pitch = 0;
+  player.crouched = false;
   for (let i = 0; i < 13; i++) {
     let x = 0;
     let z = 0;
@@ -232,9 +239,7 @@ function addBotHitbox(group, geometry, x, y, z) {
   botMeshes.push(hitbox);
 }
 
-const weaponView = new THREE.Group();
-camera.add(weaponView);
-scene.add(camera);
+const weaponView = new THREE.Group(); camera.add(weaponView); scene.add(camera);
 const gunMat = new THREE.MeshStandardMaterial({ color: 0x252d29, roughness: 0.32, metalness: 0.82 });
 const gripMat = new THREE.MeshStandardMaterial({ color: 0x494237, roughness: 0.85 });
 function gunPart(geometry, material, x, y, z) {
@@ -296,6 +301,10 @@ function chooseWeapon(index) {
   camera.fov = 76;
   camera.updateProjectionMatrix();
   updateHUD();
+}
+function setCrouchState(next) {
+  player.crouched = next;
+  applyPlayerHeight();
 }
 function startGame() {
   active = true;
@@ -484,7 +493,9 @@ function movePlayer(dt) {
   if (keys.has('KeyD')) direction.add(right);
   if (keys.has('KeyA')) direction.sub(right);
   if (!direction.lengthSq()) return;
-  direction.normalize().multiplyScalar((keys.has('ShiftLeft') || keys.has('ShiftRight') ? 12 : player.speed) * dt);
+  const crouchMultiplier = player.crouched ? 0.5 : 1;
+  const moveSpeed = (keys.has('ShiftLeft') || keys.has('ShiftRight') ? 12 : player.speed) * crouchMultiplier;
+  direction.normalize().multiplyScalar(moveSpeed * dt);
   const nextX = THREE.MathUtils.clamp(player.pos.x + direction.x, -world.half + 2, world.half - 2);
   if (!blocked(nextX, player.pos.z, 0.55)) player.pos.x = nextX;
   const nextZ = THREE.MathUtils.clamp(player.pos.z + direction.z, -world.half + 2, world.half - 2);
@@ -492,7 +503,7 @@ function movePlayer(dt) {
 }
 function updateAim() {
   if (weaponIndex === 3 && aiming) {
-    camera.fov = 31;
+    camera.fov = 28;
     dom.scope.classList.remove('hidden');
   } else {
     camera.fov = 76;
@@ -528,7 +539,10 @@ document.addEventListener('mousedown', event => {
   if (!active || paused) return;
   if (document.pointerLockElement !== canvas) { canvas.requestPointerLock?.(); return; }
   if (event.button === 0) fire();
-  if (event.button === 2 && weaponIndex === 3) { aiming = !aiming; updateAim(); }
+  if (event.button === 2 && weaponIndex === 3) { aiming = true; updateAim(); }
+});
+document.addEventListener('mouseup', event => {
+  if (event.button === 2 && weaponIndex === 3) { aiming = false; updateAim(); }
 });
 document.addEventListener('contextmenu', event => event.preventDefault());
 document.addEventListener('keydown', event => {
@@ -538,6 +552,7 @@ document.addEventListener('keydown', event => {
   if (event.code === 'KeyF') throwItem('flash');
   if (event.code === 'KeyG') throwItem('grenade');
   if (event.code === 'KeyL') { laserOn = !laserOn; updateHUD(); }
+  if (event.code === 'KeyC') setCrouchState(!player.crouched);
   if (event.code.startsWith('Digit')) chooseWeapon(Number(event.code.slice(5)) - 1);
 });
 document.addEventListener('keyup', event => keys.delete(event.code));
@@ -549,5 +564,6 @@ window.addEventListener('resize', () => {
 
 buildMap();
 buildHotbar();
+applyPlayerHeight();
 camera.position.copy(player.pos);
 tick();
