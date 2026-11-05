@@ -1,0 +1,17 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#101611">
+  <title>FRONTIER // Field Operations</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main id="game"><canvas id="scene" aria-label="First-person arena"></canvas><div class="vignette"></div>
+    <section id="menu" class="menu"><p class="eyebrow">● FRONTIER SYSTEMS // FIELD SIMULATOR</p><h1>FIELD<br><span>OPERATIONS</span></h1><p>A new theater. A live opposition. Your call.</p><button id="deploy">DEPLOY　→</button><small>WASD MOVE · MOUSE AIM · CLICK FIRE · 1–9 / Q,E WEAPONS<br>R RELOAD · G THROW GRENADE · SHIFT SPRINT · SPACE JUMP · ESC PAUSE</small></section>
+    <section id="pause" class="overlay hidden"><p class="eyebrow">FIELD OPERATIONS // PAUSED</p><h2>TAKE A BREATH.</h2><button id="resume">RESUME MISSION</button><button id="newMap" class="secondary">NEW PROCEDURAL MAP</button></section>
+    <section id="hud"><div class="top">FRONTIER <span id="status">STANDBY</span></div><canvas id="map" width="180" height="180"></canvas><div id="crosshair">＋</div><div class="bottom"><div>VITALS <b id="health">100</b><div class="meter"><i id="meter"></i></div></div><div class="weapon"><small id="class">ASSAULT // 01</small><strong id="weapon">RANGER</strong><span id="ammo">30 / 120</span></div></div><div id="contacts"></div><div id="toast"></div><div id="damage"></div></section>
+  </main><script type="module" src="game.js"></script>
+</body>
+</html>
